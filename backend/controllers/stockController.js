@@ -1,5 +1,32 @@
 const Stock = require("../models/Stock");
 
+const axios = require("axios");
+
+const predictStockPrice = async (req, res) => {
+  try {
+    const { currentPrice } = req.body;
+
+    if (!currentPrice) {
+      return res.status(400).json({ error: "currentPrice is required" });
+    }
+
+    // Call ML API
+    const response = await axios.post("http://localhost:5001/predict", {
+      currentPrice,
+    });
+
+    return res.json({
+      originalPrice: currentPrice,
+      predictedPrice: response.data.predictedPrice,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error in ML prediction" });
+  }
+};
+
+module.exports = { predictStockPrice };
+
 // @desc Get all stocks
 const getStocks = async (req, res) => {
   try {
@@ -49,4 +76,10 @@ const deleteStock = async (req, res) => {
   }
 };
 
-module.exports = { getStocks, addStock, updateStock, deleteStock };
+module.exports = {
+  getStocks,
+  addStock,
+  updateStock,
+  deleteStock,
+  predictStockPrice,
+};

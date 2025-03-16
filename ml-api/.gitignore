@@ -1,0 +1,23 @@
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore model files (optional, if models can be regenerated)
+*.pkl
+*.h5
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore environment files
+.env
+
+# Ignore Jupyter Notebook checkpoints (if using Jupyter)
+.ipynb_checkpoints/
+
+# Ignore temporary files
+.DS_Store
+Thumbs.db
