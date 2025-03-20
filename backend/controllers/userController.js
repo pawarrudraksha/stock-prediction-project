@@ -108,3 +108,19 @@ exports.getUserPredictions = async (req, res) => {
     res.status(500).json({ error: "Error retrieving predictions" });
   }
 };
+
+exports.getStockSentiment = async (req, res) => {
+  try {
+    const { ticker } = req.query;
+    if (!ticker) return res.status(400).json({ error: "Ticker is required" });
+
+    const response = await axios.post("http://localhost:5001/sentiment", {
+      ticker,
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching sentiment:", error);
+    res.status(500).json({ error: "Sentiment analysis failed" });
+  }
+};

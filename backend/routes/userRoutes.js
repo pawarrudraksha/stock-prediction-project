@@ -10,6 +10,7 @@ router.post("/predict", auth, userController.predictStock);
 // Watchlist routes
 router.post("/watchlist/add", auth, userController.addToWatchlist);
 router.get("/watchlist", auth, userController.getWatchlist);
+router.get("/sentiment", auth, userController.getStockSentiment);
 
 // User prediction history
 router.get("/predictions", auth, userController.getUserPredictions);

@@ -40,7 +40,7 @@ def train_models(ticker):
     with open(f"AAPL_xgb.pkl", "wb") as f:
         pickle.dump(xgb_model, f)
 
-    print("✅ Models trained and saved!")
+    print(" Models trained and saved!")
 
 if __name__ == "__main__":
     train_models("AAPL")  # Train on Apple stock
