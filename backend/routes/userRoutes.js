@@ -11,6 +11,9 @@ router.post("/predict", auth, userController.predictStock);
 router.post("/watchlist/add", auth, userController.addToWatchlist);
 router.get("/watchlist", auth, userController.getWatchlist);
 router.get("/sentiment", auth, userController.getStockSentiment);
+router.get("/trending", auth, userController.getTrendingStocks);
+router.get("/overview", auth, userController.getMarketOverview);
+router.get("/stock-details", auth, userController.getStockDetails);
 
 // User prediction history
 router.get("/predictions", auth, userController.getUserPredictions);

@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
-const SECRET_KEY = process.env.MONGO_URI;
+const SECRET_KEY = process.env.SECRET_KEY;
 
 // User Signup
 exports.signup = async (req, res) => {

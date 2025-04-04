@@ -1,7 +1,9 @@
-const axios = require("axios");
+const yahooFinance = require("yahoo-finance2").default;
 const Prediction = require("../models/Prediction");
 const Watchlist = require("../models/Watchlist");
+const axios = require("axios");
 
+// Predict stock
 exports.predictStock = async (req, res) => {
   const { ticker, model } = req.body;
 
@@ -32,29 +34,103 @@ exports.predictStock = async (req, res) => {
   }
 };
 
+// Search for stocks
 exports.searchStock = async (req, res) => {
   try {
     const { query } = req.query;
     if (!query)
       return res.status(400).json({ error: "Search query is required" });
 
-    const response = await axios.get(
-      `https://query1.finance.yahoo.com/v1/finance/search?q=${query}&quotesCount=5&newsCount=0`
-    );
-
-    if (!response.data.quotes.length)
+    const result = await yahooFinance.search(query);
+    if (!result.quotes.length)
       return res.status(404).json({ error: "No stocks found" });
 
-    const stocks = response.data.quotes.map((stock) => ({
+    const stocks = result.quotes.map((stock) => ({
       ticker: stock.symbol,
-      name: stock.longname || stock.shortname,
+      name: stock.shortname || stock.longname,
       exchange: stock.exchange,
     }));
 
     return res.json({ stocks });
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching stock data:", error);
     res.status(500).json({ error: "Error fetching stock data" });
+  }
+};
+
+exports.getStockDetails = async (req, res) => {
+  try {
+    const { ticker } = req.query;
+    if (!ticker) return res.status(400).json({ error: "Ticker is required" });
+
+    const result = await yahooFinance.quoteSummary(ticker, {
+      modules: ["price", "summaryDetail", "financialData"],
+    });
+
+    if (!result) return res.status(404).json({ error: "Stock not found" });
+
+    const stockDetails = {
+      ticker: ticker.toUpperCase(),
+      name: result.price.longName,
+      currentPrice: result.price.regularMarketPrice,
+      high52Week: result.summaryDetail.fiftyTwoWeekHigh,
+      low52Week: result.summaryDetail.fiftyTwoWeekLow,
+      marketCap: result.price.marketCap,
+      peRatio: result.summaryDetail.trailingPE,
+      dividendYield: result.summaryDetail.dividendYield,
+    };
+
+    return res.json({ stockDetails });
+  } catch (error) {
+    console.error("Error fetching stock details:", error);
+    res.status(500).json({ error: "Error fetching stock details" });
+  }
+};
+
+// Get trending stocks
+exports.getTrendingStocks = async (req, res) => {
+  try {
+    const trendingSymbols = ["AAPL", "TSLA", "VGT"];
+
+    // Fetch each stock separately
+    const stockPromises = trendingSymbols.map((symbol) =>
+      yahooFinance.quote(symbol)
+    );
+    const stocksData = await Promise.all(stockPromises);
+
+    const stocks = stocksData.map((stock) => ({
+      ticker: stock.symbol,
+      name: stock.longName || stock.shortName,
+      price: stock.regularMarketPrice,
+      change: stock.regularMarketChangePercent.toFixed(2),
+    }));
+
+    res.json(stocks);
+  } catch (error) {
+    console.error("Error fetching trending stocks:", error);
+    res.status(500).json({ error: "Failed to fetch trending stocks" });
+  }
+};
+
+// Get market overview (Nifty 50 & Sensex)
+exports.getMarketOverview = async (req, res) => {
+  try {
+    const indices = ["^NSEI", "^BSESN"];
+
+    // Fetch each index separately
+    const indexPromises = indices.map((symbol) => yahooFinance.quote(symbol));
+    const marketData = await Promise.all(indexPromises);
+
+    const formattedMarketData = marketData.map((index) => ({
+      name: index.shortName,
+      price: index.regularMarketPrice,
+      change: index.regularMarketChangePercent.toFixed(2),
+    }));
+
+    res.json(formattedMarketData);
+  } catch (error) {
+    console.error("Error fetching market data:", error);
+    res.status(500).json({ error: "Failed to fetch market overview" });
   }
 };
 
@@ -94,13 +170,13 @@ exports.getWatchlist = async (req, res) => {
   }
 };
 
+// Get user predictions
 exports.getUserPredictions = async (req, res) => {
   try {
-    const userId = req.user.userId; // Extract user ID from the authenticated request
-
+    const userId = req.user.userId;
     const predictions = await Prediction.find({ userId }).sort({
       timestamp: -1,
-    }); // Get latest predictions first
+    });
 
     res.json(predictions);
   } catch (error) {
@@ -109,6 +185,7 @@ exports.getUserPredictions = async (req, res) => {
   }
 };
 
+// Get stock sentiment (ML API)
 exports.getStockSentiment = async (req, res) => {
   try {
     const { ticker } = req.query;

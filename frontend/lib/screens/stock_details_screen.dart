@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 import 'prediction_screen.dart';
+import 'package:frontend/functions/api_services.dart';
 
 class StockDetailsScreen extends StatefulWidget {
-  const StockDetailsScreen({Key? key}) : super(key: key);
+  final String ticker;
+
+  const StockDetailsScreen({Key? key, required this.ticker}) : super(key: key);
 
   @override
   _StockDetailsScreenState createState() => _StockDetailsScreenState();
@@ -13,6 +16,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  Map<String, dynamic>? stockData;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -23,6 +28,17 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
     );
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
     _controller.forward();
+    _fetchStockDetails();
+  }
+
+  Future<void> _fetchStockDetails() async {
+    final data = await ApiService.getStockDetails(widget.ticker);
+    if (mounted) {
+      setState(() {
+        stockData = data?["stockDetails"] ?? {};
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -32,55 +48,66 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
   }
 
   void _navigateToPredictionScreen() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const PredictionScreen()));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PredictionScreen(ticker: widget.ticker),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stock Details'),
+        title: Text(
+          stockData != null
+              ? '${stockData!["name"]} (${widget.ticker})'
+              : 'Stock Details',
+        ),
         backgroundColor: Colors.blue.shade700,
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStockInfo(),
-              const SizedBox(height: 20),
-              _buildSectionTitle('Key Metrics', Icons.analytics),
-              _buildMetricTile('Market Cap', '\$1.2T'),
-              _buildMetricTile('P/E Ratio', '25.4'),
-              _buildMetricTile('Dividend Yield', '1.8%'),
-              const SizedBox(height: 20),
-              _buildSectionTitle('Recent Performance', Icons.trending_up),
-              _buildPerformanceCard(),
-              const SizedBox(height: 20),
-              _buildSectionTitle('News & Insights', Icons.article),
-              _buildNewsTile(
-                'Tesla stock surges 5% after strong earnings report',
-                '5h ago',
-              ),
-              _buildNewsTile(
-                'Analysts predict bullish trend for TSLA',
-                '1d ago',
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _navigateToPredictionScreen,
-                  child: const Text('Predict Stock Price'),
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : FadeTransition(
+                opacity: _fadeAnimation,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStockInfo(),
+                      const SizedBox(height: 20),
+                      _buildSectionTitle('Key Metrics', Icons.analytics),
+                      _buildMetricTile(
+                        'Market Cap',
+                        stockData?["marketCap"].toString() ?? 'N/A',
+                      ),
+                      _buildMetricTile(
+                        'P/E Ratio',
+                        stockData?["peRatio"].toString() ?? 'N/A',
+                      ),
+                      _buildMetricTile(
+                        'Dividend Yield',
+                        stockData?["dividendYield"].toString() ?? 'N/A',
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSectionTitle(
+                        'Recent Performance',
+                        Icons.trending_up,
+                      ),
+                      _buildPerformanceCard(),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: _navigateToPredictionScreen,
+                          child: const Text('Predict Stock Price'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -92,18 +119,20 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
-              'Tesla Inc. (TSLA)',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              stockData?["name"] ?? 'Unknown Stock',
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Current Price: \$755.00',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              'Current Price: \$${stockData?["currentPrice"] ?? 'N/A'}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 8),
-            Text('52-Week High: \$900.00   |   52-Week Low: \$550.00'),
+            // const SizedBox(height: 8),
+            // Text(
+            //   '52-Week High: \$${stockData?["high52Week"] ?? 'N/A'}   |   52-Week Low: \$${stockData?["low52Week"] ?? 'N/A'}',
+            // ),
           ],
         ),
       ),
@@ -143,36 +172,18 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
+          children: [
+            const Text(
               'Past 7 Days Performance',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
-            Text('Highest: \$780.00  |  Lowest: \$730.00'),
-            SizedBox(height: 8),
-            Text('Volatility: 4.5%'),
+            const SizedBox(height: 8),
+            Text(
+              'Highest: \$${stockData?["high52Week"] ?? 'N/A'}  |  Lowest: \$${stockData?["low52Week"] ?? 'N/A'}',
+            ),
+            const SizedBox(height: 8),
+            Text('Volatility: ${stockData?["volatility"] ?? 'N/A'}%'),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNewsTile(String headline, String timeAgo) {
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-      child: ListTile(
-        leading: const Icon(Icons.article, color: Colors.blue),
-        title: Text(
-          headline,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(timeAgo),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: Colors.grey,
         ),
       ),
     );

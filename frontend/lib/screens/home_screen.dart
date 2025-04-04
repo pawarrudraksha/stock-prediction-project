@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/functions/api_services.dart';
 import 'stock_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +13,8 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  List<dynamic> trendingStocks = [];
+  List<dynamic> marketOverview = [];
 
   @override
   void initState() {
@@ -22,6 +25,26 @@ class _HomeScreenState extends State<HomeScreen>
     );
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
     _controller.forward();
+    _fetchTrendingStocks();
+    _fetchMarketOverview();
+  }
+
+  Future<void> _fetchTrendingStocks() async {
+    final stocks = await ApiService.getTrendingStocks();
+    if (mounted) {
+      setState(() {
+        trendingStocks = stocks;
+      });
+    }
+  }
+
+  Future<void> _fetchMarketOverview() async {
+    final overview = await ApiService.getMarketOverview();
+    if (mounted) {
+      setState(() {
+        marketOverview = overview;
+      });
+    }
   }
 
   @override
@@ -30,15 +53,12 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  void _navigateToStockDetails(
-    BuildContext context,
-    String stockName,
-    double stockPrice,
-    double stockChange,
-  ) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => StockDetailsScreen()));
+  void _navigateToStockDetails(BuildContext context, String ticker) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => StockDetailsScreen(ticker: ticker),
+      ),
+    );
   }
 
   @override
@@ -65,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen>
               const Text(
                 'Welcome to Stock Predictor!',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -84,32 +104,49 @@ class _HomeScreenState extends State<HomeScreen>
                       const Text(
                         'Market Overview:',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Row(
-                        children: const [
-                          Icon(Icons.show_chart, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text(
-                            'Nifty 50: 19,800 ▲ 1.5%',
-                            style: TextStyle(fontSize: 16, color: Colors.green),
+                      marketOverview.isEmpty
+                          ? const Center(child: CircularProgressIndicator())
+                          : Column(
+                            children:
+                                marketOverview.map((index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          index["change"] >= 0
+                                              ? Icons.trending_up
+                                              : Icons.trending_down,
+                                          color:
+                                              index["change"] >= 0
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            '${index["name"]}: ${index["price"]} ${index["change"] >= 0 ? "▲" : "▼"} ${index["change"]}%',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  index["change"] >= 0
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: const [
-                          Icon(Icons.bar_chart, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text(
-                            'Sensex: 66,000 ▲ 1.2%',
-                            style: TextStyle(fontSize: 16, color: Colors.green),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -117,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 10),
               const Text(
                 'Trending Stocks:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
               Expanded(
@@ -137,82 +174,56 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   ),
-                  child: ListView(
-                    children: [
-                      GestureDetector(
-                        onTap:
-                            () => _navigateToStockDetails(
-                              context,
-                              'Reliance Industries',
-                              2480.50,
-                              2.3,
-                            ),
-                        child: const Card(
-                          elevation: 3,
-                          margin: EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 5,
+                  child:
+                      trendingStocks.isEmpty
+                          ? const Center(child: CircularProgressIndicator())
+                          : ListView.builder(
+                            itemCount: trendingStocks.length,
+                            itemBuilder: (context, index) {
+                              final stock = trendingStocks[index];
+                              return GestureDetector(
+                                onTap:
+                                    () => _navigateToStockDetails(
+                                      context,
+                                      stock["ticker"],
+                                    ),
+                                child: Card(
+                                  elevation: 3,
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 5,
+                                  ),
+                                  child: ListTile(
+                                    leading: Icon(
+                                      stock["change"] >= 0
+                                          ? Icons.trending_up
+                                          : Icons.trending_down,
+                                      color:
+                                          stock["change"] >= 0
+                                              ? Colors.green
+                                              : Colors.red,
+                                    ),
+                                    title: Text(
+                                      stock["name"],
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    subtitle: Text(
+                                      stock["change"] >= 0
+                                          ? "▲ ${stock["change"].toStringAsFixed(2)}%"
+                                          : "▼ ${stock["change"].toStringAsFixed(2)}%",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color:
+                                            stock["change"] >= 0
+                                                ? Colors.green
+                                                : Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.trending_up,
-                              color: Colors.green,
-                            ),
-                            title: Text('Reliance Industries'),
-                            subtitle: Text('▲ 2.3%'),
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap:
-                            () => _navigateToStockDetails(
-                              context,
-                              'TCS',
-                              3580.75,
-                              -1.2,
-                            ),
-                        child: const Card(
-                          elevation: 3,
-                          margin: EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 5,
-                          ),
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.trending_down,
-                              color: Colors.red,
-                            ),
-                            title: Text('TCS'),
-                            subtitle: Text('▼ 1.2%'),
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap:
-                            () => _navigateToStockDetails(
-                              context,
-                              'Infosys',
-                              1505.30,
-                              1.8,
-                            ),
-                        child: const Card(
-                          elevation: 3,
-                          margin: EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 5,
-                          ),
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.trending_up,
-                              color: Colors.green,
-                            ),
-                            title: Text('Infosys'),
-                            subtitle: Text('▲ 1.8%'),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
