@@ -4,7 +4,7 @@ const userController = require("../controllers/userController");
 const auth = require("../middleware/authMiddleware");
 
 // Stock search and prediction routes
-router.get("/search", userController.searchStock);
+router.get("/search", auth, userController.searchStock);
 router.post("/predict", auth, userController.predictStock);
 
 // Watchlist routes

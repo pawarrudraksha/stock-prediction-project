@@ -74,6 +74,7 @@ def predict():
 sentiment_pipeline = pipeline("sentiment-analysis", model="ProsusAI/finbert")
 
 # News API Key
+NEWS_API_KEY = "2c4a6d975eb1457388c5d1c3e5f6051f"
 
 @app.route('/sentiment', methods=['POST'])
 def analyze_sentiment():
@@ -106,5 +107,4 @@ if __name__ == '__main__':
     app.run(debug=True, port=5001)
 
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+

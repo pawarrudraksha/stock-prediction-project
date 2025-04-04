@@ -1,12 +1,13 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
-const SECRET_KEY = "your_secret_key";
+const dotenv = require("dotenv");
+dotenv.config();
+const SECRET_KEY = process.env.MONGO_URI;
 
 // User Signup
 exports.signup = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password required" });
@@ -14,15 +15,22 @@ exports.signup = async (req, res) => {
 
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser)
+    if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ email, password: hashedPassword });
+    const newUser = new User({ email, password: hashedPassword, name });
     await newUser.save();
 
-    res.status(201).json({ message: "Signup successful" });
+    // Generate JWT token
+    const token = jwt.sign({ userId: newUser._id }, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
+    res.status(201).json({ token });
   } catch (err) {
+    console.error("Signup error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
