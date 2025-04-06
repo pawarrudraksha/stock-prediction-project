@@ -147,4 +147,28 @@ class ApiService {
       throw Exception('Failed to get prediction');
     }
   }
+
+  static Future<Map<String, dynamic>> searchStocks(String query) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('jwt_token');
+
+    if (token == null) {
+      throw Exception("User not authenticated");
+    }
+
+    final url = Uri.parse('$_baseUrl/search?query=$query');
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body); // Now returns a Map with "stocks" key
+    } else {
+      throw Exception('Failed to load stock search results');
+    }
+  }
 }

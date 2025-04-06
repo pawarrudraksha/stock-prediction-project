@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/functions/api_services.dart';
+import 'package:frontend/screens/stock_details_screen.dart'; // Replace with your actual path
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -7,34 +9,38 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<String> _searchResults = [];
+  List<Map<String, dynamic>> _searchResults = [];
   bool _isLoading = false;
 
-  void _performSearch(String query) {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _performSearch(String query) async {
+    if (query.isEmpty) {
+      setState(() => _searchResults = []);
+      return;
+    }
 
-    Future.delayed(const Duration(seconds: 1), () {
+    setState(() => _isLoading = true);
+
+    try {
+      final data = await ApiService.searchStocks(query);
       setState(() {
+        _searchResults = List<Map<String, dynamic>>.from(data['stocks']);
         _isLoading = false;
-        _searchResults =
-            query.isEmpty
-                ? []
-                : [
-                      'Reliance Industries',
-                      'TCS',
-                      'Infosys',
-                      'HDFC Bank',
-                      'ICICI Bank',
-                    ]
-                    .where(
-                      (stock) =>
-                          stock.toLowerCase().contains(query.toLowerCase()),
-                    )
-                    .toList();
       });
-    });
+    } catch (e) {
+      setState(() {
+        _searchResults = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _navigateToDetails(String ticker) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StockDetailsScreen(ticker: ticker),
+      ),
+    );
   }
 
   @override
@@ -72,12 +78,22 @@ class _SearchScreenState extends State<SearchScreen> {
                           : ListView.builder(
                             itemCount: _searchResults.length,
                             itemBuilder: (context, index) {
+                              final stock = _searchResults[index];
+                              final name = stock['name'] ?? 'Unnamed Stock';
+                              final ticker = stock['ticker'] ?? '';
+
                               return ListTile(
                                 leading: const Icon(
                                   Icons.trending_up,
                                   color: Colors.green,
                                 ),
-                                title: Text(_searchResults[index]),
+                                title: Text(name),
+                                subtitle: Text(ticker),
+                                onTap: () {
+                                  if (ticker.isNotEmpty) {
+                                    _navigateToDetails(ticker);
+                                  }
+                                },
                               );
                             },
                           ),

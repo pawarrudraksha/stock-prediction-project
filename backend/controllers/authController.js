@@ -58,3 +58,19 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.userId; // Assuming user is authenticated and userId is in req.user
+    const user = await User.findById(userId).select("name email"); // Only fetch name and email
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ error: "Error retrieving user profile" });
+  }
+};

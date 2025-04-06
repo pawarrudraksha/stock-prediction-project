@@ -22,23 +22,31 @@ def fetch_stock_data(ticker):
     df.dropna(inplace=True)
     return df
 
-# Train models dynamically
+# Train models dynamically or fallback
 def train_models(ticker):
     df = fetch_stock_data(ticker)
-    if df is None:
-        return None
+    if df is None or len(df) < 10:
+        print(f"📉 Not enough data to train model for {ticker}. Using fallback strategy.")
+        try:
+            fallback_price = yf.Ticker(ticker).history(period="1d")['Close'].iloc[-1] * 1.01  # +1% estimate
+            return "fallback", round(fallback_price, 2)
+        except Exception as e:
+            print(f"❌ Fallback price fetch failed for {ticker}: {e}")
+            return None
 
     # Features & Labels
-    X = df[['Close', 'Volume']].values  # Features: Close Price & Volume
-    y = df['Close'].shift(-1).dropna().values  # Predict next day's Close price
+    X = df[['Close', 'Volume']].values
+    y = df['Close'].shift(-1).dropna().values
     X = X[:-1]  # Align X with y
 
-    if len(X) == 0 or len(y) == 0:
-        print(f"Not enough data to train model for {ticker}.")
+    if len(X) < 2:
+        print(f"❌ Not enough data to train model for {ticker}. Required at least 2 rows, got {len(X)}.")
         return None
 
     # Split dataset
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     # Train Random Forest
     rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
@@ -48,7 +56,7 @@ def train_models(ticker):
     xgb_model = xgb.XGBRegressor(objective="reg:squarederror", n_estimators=100)
     xgb_model.fit(X_train, y_train)
 
-    # Save models dynamically
+    # Save models
     rf_path = os.path.join(MODEL_DIR, f"{ticker}_rf.pkl")
     xgb_path = os.path.join(MODEL_DIR, f"{ticker}_xgb.pkl")
 
@@ -58,8 +66,7 @@ def train_models(ticker):
         pickle.dump(xgb_model, f)
 
     print(f"✅ Models trained and saved for {ticker}!")
-
-    return rf_model, xgb_model  # Return trained models
+    return "success", None
 
 if __name__ == "__main__":
     user_ticker = input("Enter the stock ticker: ").upper()

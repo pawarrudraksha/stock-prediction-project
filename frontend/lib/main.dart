@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/prediction_history_screen.dart';
 import 'package:frontend/screens/signup_screen.dart';
 import 'package:frontend/functions/auth_service.dart';
+import 'package:frontend/screens/watchlist_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
-import 'screens/details_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/login_screen.dart'; // Import login screen
 
@@ -37,6 +38,8 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => const MainScreen(),
+        '/predictionHistory': (context) => const PredictionHistoryScreen(),
+        '/watchlist': (context) => const WatchlistScreen(),
       },
       home: FutureBuilder<bool>(
         future: _isLoggedIn,
@@ -67,7 +70,7 @@ class _MainScreenState extends State<MainScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     SearchScreen(),
-    DetailsScreen(),
+    // DetailsScreen(),
     ProfileScreen(),
   ];
 
@@ -86,10 +89,10 @@ class _MainScreenState extends State<MainScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Details',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.bar_chart),
+          //   label: 'Details',
+          // ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: _selectedIndex,

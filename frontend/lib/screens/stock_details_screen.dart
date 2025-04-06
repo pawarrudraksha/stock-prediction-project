@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 import 'prediction_screen.dart';
 import 'package:frontend/functions/api_services.dart';
+import 'package:frontend/functions/user_services.dart';
 
 class StockDetailsScreen extends StatefulWidget {
   final String ticker;
@@ -35,9 +36,22 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
     final data = await ApiService.getStockDetails(widget.ticker);
     if (mounted) {
       setState(() {
-        stockData = data?["stockDetails"] ?? {};
+        stockData = data?['stockDetails'] ?? {};
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _addToWatchlist() async {
+    try {
+      await UserServices.addToWatchlist(widget.ticker);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Stock added to watchlist')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('❌ Stock already added to watchlist')),
+      );
     }
   }
 
@@ -61,10 +75,19 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
       appBar: AppBar(
         title: Text(
           stockData != null
-              ? '${stockData!["name"]} (${widget.ticker})'
+              ? '${stockData!['name']} (${widget.ticker})'
               : 'Stock Details',
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blue.shade700,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bookmark_add),
+            onPressed: _addToWatchlist,
+          ),
+        ],
       ),
       body:
           isLoading
@@ -99,9 +122,26 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
                       _buildPerformanceCard(),
                       const SizedBox(height: 20),
                       Center(
-                        child: ElevatedButton(
+                        child: ElevatedButton.icon(
                           onPressed: _navigateToPredictionScreen,
-                          child: const Text('Predict Stock Price'),
+                          icon: const Icon(
+                            Icons.trending_up,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'Predict Stock Price',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -113,26 +153,23 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
 
   Widget _buildStockInfo() {
     return Card(
-      elevation: 3,
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               stockData?["name"] ?? 'Unknown Stock',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               'Current Price: \$${stockData?["currentPrice"] ?? 'N/A'}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
-            // const SizedBox(height: 8),
-            // Text(
-            //   '52-Week High: \$${stockData?["high52Week"] ?? 'N/A'}   |   52-Week Low: \$${stockData?["low52Week"] ?? 'N/A'}',
-            // ),
           ],
         ),
       ),
@@ -155,6 +192,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
   Widget _buildMetricTile(String title, String value) {
     return Card(
       elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
       child: ListTile(
         leading: const Icon(Icons.bar_chart, color: Colors.blue),
@@ -167,6 +205,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
   Widget _buildPerformanceCard() {
     return Card(
       elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
       child: Padding(
         padding: const EdgeInsets.all(16.0),

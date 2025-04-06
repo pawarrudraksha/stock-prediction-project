@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/functions/auth_service.dart';
+import 'package:frontend/functions/user_services.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -12,16 +13,40 @@ class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  String _userName = '';
+  String _userEmail = '';
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 800),
     );
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
     _controller.forward();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      final profile = await UserServices.getUserProfile();
+      setState(() {
+        _userName = profile['name'] ?? 'Unknown';
+        _userEmail = profile['email'] ?? 'No email';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _userName = 'Error loading name';
+        _userEmail = 'Error loading email';
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -35,12 +60,17 @@ class _ProfileScreenState extends State<ProfileScreen>
     Navigator.pushReplacementNamed(context, '/login');
   }
 
+  void _navigateTo(String routeName) {
+    Navigator.pushNamed(context, routeName);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Profile', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue.shade700,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
@@ -50,62 +80,29 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Colors.white],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
             children: [
-              Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage('assets/profile.jpg'),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'John Doe',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'johndoe@example.com',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              _buildProfileCard(),
+              const SizedBox(height: 30),
+              _buildFeatureTile(
+                title: 'Prediction History',
+                icon: Icons.trending_up_rounded,
+                routeName: '/predictionHistory',
               ),
-              const SizedBox(height: 20),
-              _buildSectionTitle('Saved Stocks'),
-              _buildListTile('Tesla Inc.', 'TSLA', Icons.star),
-              _buildListTile('Apple Inc.', 'AAPL', Icons.star),
-
-              const SizedBox(height: 20),
-              _buildSectionTitle('Prediction History'),
-              _buildListTile(
-                'Amazon (AMZN)',
-                'Predicted: ▲ 3.5%',
-                Icons.history,
+              _buildFeatureTile(
+                title: 'Watchlist',
+                icon: Icons.visibility_rounded,
+                routeName: '/watchlist',
               ),
-              _buildListTile(
-                'Google (GOOGL)',
-                'Predicted: ▼ 1.2%',
-                Icons.history,
-              ),
-
-              const SizedBox(height: 20),
-              _buildSectionTitle('Watchlist'),
-              _buildListTile('Microsoft Corp.', 'MSFT', Icons.visibility),
-              _buildListTile('Netflix Inc.', 'NFLX', Icons.visibility),
             ],
           ),
         ),
@@ -113,25 +110,93 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  Widget _buildProfileCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.blue.shade200.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 40,
+            backgroundImage: AssetImage('assets/profile.jpg'),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child:
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _userName,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _userEmail,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.white70,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildListTile(String title, String subtitle, IconData icon) {
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.blue),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: Colors.grey,
+  Widget _buildFeatureTile({
+    required String title,
+    required IconData icon,
+    required String routeName,
+  }) {
+    return GestureDetector(
+      onTap: () => _navigateTo(routeName),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.shade100,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.blueAccent, size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 18, color: Colors.black87),
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+          ],
         ),
       ),
     );

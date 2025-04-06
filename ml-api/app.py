@@ -54,10 +54,23 @@ def predict():
 
     if model is None:
         print(f"⚠️ Model for {ticker} not found! Training now...")
-        train_models(ticker)  # Train and save models
-        model = load_model(ticker, model_type)  # Reload model after training
-        if model is None:
-            return jsonify({"error": f"Failed to train model for {ticker}"}), 500
+    result = train_models(ticker)
+    if result == None:
+        return jsonify({"error": f"Model training failed for {ticker}"}), 500
+    elif result[0] == "fallback":
+        fallback_price = result[1]
+        return jsonify({
+            "ticker": ticker,
+            "current_price": fallback_price / 1.01,
+            "predicted_price": fallback_price,
+            "model_used": "fallback (+1% rule)"
+        })
+
+
+    model = load_model(ticker, model_type)
+    if model is None:
+        return jsonify({"error": f"Model training failed for {ticker}"}), 500
+
 
     # Fetch current stock price
     current_price = get_stock_price(ticker)

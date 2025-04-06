@@ -9,6 +9,7 @@ router.post("/predict", auth, userController.predictStock);
 
 // Watchlist routes
 router.post("/watchlist/add", auth, userController.addToWatchlist);
+router.post("/watchlist/remove", auth, userController.removeFromWatchlist);
 router.get("/watchlist", auth, userController.getWatchlist);
 router.get("/sentiment", auth, userController.getStockSentiment);
 router.get("/trending", auth, userController.getTrendingStocks);

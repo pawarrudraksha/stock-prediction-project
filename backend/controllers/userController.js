@@ -34,20 +34,20 @@ exports.predictStock = async (req, res) => {
   }
 };
 
-// Search for stocks
 exports.searchStock = async (req, res) => {
   try {
-    const { query } = req.query;
+    const query = req.query.query?.trim();
     if (!query)
       return res.status(400).json({ error: "Search query is required" });
 
     const result = await yahooFinance.search(query);
-    if (!result.quotes.length)
+
+    if (!result.quotes || !result.quotes.length)
       return res.status(404).json({ error: "No stocks found" });
 
     const stocks = result.quotes.map((stock) => ({
       ticker: stock.symbol,
-      name: stock.shortname || stock.longname,
+      name: stock.shortname || stock.longname || "Unnamed Stock",
       exchange: stock.exchange,
     }));
 
@@ -163,10 +163,59 @@ exports.addToWatchlist = async (req, res) => {
 exports.getWatchlist = async (req, res) => {
   try {
     const watchlist = await Watchlist.find({ userId: req.user.userId });
-    res.json(watchlist);
+
+    const enrichedWatchlist = await Promise.all(
+      watchlist.map(async (item) => {
+        try {
+          const quote = await yahooFinance.quote(item.ticker);
+          return {
+            _id: item._id,
+            ticker: item.ticker,
+            stockName: quote.shortName || quote.longName || "N/A",
+            addedAt: item.createdAt,
+          };
+        } catch (err) {
+          console.error(
+            `Error fetching stock info for ${item.ticker}:`,
+            err.message
+          );
+          return {
+            _id: item._id,
+            ticker: item.ticker,
+            stockName: "Unknown",
+            addedAt: item.createdAt,
+          };
+        }
+      })
+    );
+
+    res.json(enrichedWatchlist);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching watchlist:", error);
     res.status(500).json({ error: "Error fetching watchlist" });
+  }
+};
+
+exports.removeFromWatchlist = async (req, res) => {
+  try {
+    const { stockId } = req.body;
+    if (!stockId) {
+      return res.status(400).json({ error: "Stock ID is required" });
+    }
+
+    const removed = await Watchlist.findOneAndDelete({
+      _id: stockId,
+      userId: req.user.userId,
+    });
+
+    if (!removed) {
+      return res.status(404).json({ error: "Stock not found in watchlist" });
+    }
+
+    res.json({ message: "Stock removed from watchlist", removed });
+  } catch (error) {
+    console.error("Error removing from watchlist:", error);
+    res.status(500).json({ error: "Error removing from watchlist" });
   }
 };
 
