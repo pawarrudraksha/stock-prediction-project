@@ -6,6 +6,9 @@ import os
 import requests
 from transformers import pipeline
 from train_models import train_models  # Import train_models function
+from dotenv import load_dotenv  # 🔒 Added for environment variable support
+
+load_dotenv()  # 🔒 Load .env file
 
 app = Flask(__name__)
 
@@ -90,7 +93,7 @@ def predict():
 # Load FinBERT model for sentiment analysis
 sentiment_pipeline = pipeline("sentiment-analysis", model="ProsusAI/finbert")
 
-NEWS_API_KEY = "2c4a6d975eb1457388c5d1c3e5f6051f"
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")  # 🔒 Loaded from .env
 
 @app.route('/sentiment', methods=['POST'])
 def analyze_sentiment():
@@ -101,7 +104,6 @@ def analyze_sentiment():
     if not ticker:
         return jsonify({"error": "Ticker is required"}), 400
 
-    # Fetch news articles
     news_url = f"https://newsapi.org/v2/everything?q={ticker}&apiKey={NEWS_API_KEY}"
     response = requests.get(news_url)
 
@@ -112,13 +114,23 @@ def analyze_sentiment():
     if not articles:
         return jsonify({"error": "No news found"}), 404
 
-    sentiments = []
-    for article in articles[:5]:  # Analyze first 5 articles
-        text = article["title"] + ". " + article.get("description", "")
-        sentiment = sentiment_pipeline(text)[0]
-        sentiments.append({"text": text, "sentiment": sentiment["label"], "score": sentiment["score"]})
+    sentiment_counts = {"POSITIVE": 0, "NEGATIVE": 0, "NEUTRAL": 0}
 
-    return jsonify({"ticker": ticker, "sentiments": sentiments})
+    for article in articles[:5]:
+        title = article.get("title") or ""
+        description = article.get("description") or ""
+        text = title + ". " + description
+
+        if text.strip() == ".":
+            continue  # skip empty articles
+
+        sentiment_label = sentiment_pipeline(text)[0]["label"].upper()
+        if sentiment_label in sentiment_counts:
+            sentiment_counts[sentiment_label] += 1
+
+    overall_sentiment = max(sentiment_counts, key=sentiment_counts.get)
+    return jsonify({"ticker": ticker, "sentiment": overall_sentiment.capitalize()})
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

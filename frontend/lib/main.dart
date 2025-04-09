@@ -6,7 +6,7 @@ import 'package:frontend/screens/watchlist_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/login_screen.dart'; // Import login screen
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,8 +32,34 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Stock Predictor',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      title: 'StockGPT',
+      theme: ThemeData(
+        primaryColor: Colors.indigo.shade700,
+        scaffoldBackgroundColor: Colors.indigo.shade50,
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          primary: Colors.indigo.shade700,
+          secondary: Colors.indigo.shade100,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.indigo.shade700,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          selectedItemColor: Colors.indigo.shade700,
+          unselectedItemColor: Colors.grey,
+          backgroundColor: Colors.white,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.indigo.shade700,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+      ),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
@@ -70,7 +96,6 @@ class _MainScreenState extends State<MainScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     SearchScreen(),
-    // DetailsScreen(),
     ProfileScreen(),
   ];
 
@@ -89,14 +114,9 @@ class _MainScreenState extends State<MainScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.bar_chart),
-          //   label: 'Details',
-          // ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
         onTap: _onItemTapped,
       ),
     );

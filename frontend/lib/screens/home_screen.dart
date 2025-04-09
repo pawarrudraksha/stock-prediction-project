@@ -65,36 +65,33 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stock Predictor'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text(
+          '📈 StockGPT',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+        backgroundColor: Colors.indigo.shade700,
+        elevation: 4,
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.white],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Welcome to Stock Predictor!',
+                'Welcome to StockGPT! ',
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Card(
-                elevation: 5,
+                elevation: 6,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -102,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Market Overview:',
+                        '📊 Market Overview',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -132,14 +129,24 @@ class _HomeScreenState extends State<HomeScreen>
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            '${index["name"]}: ${index["price"]} ${index["change"] >= 0 ? "▲" : "▼"} ${index["change"]}%',
-                                            style: TextStyle(
+                                            '${index["name"]}: ${index["price"]}',
+                                            style: const TextStyle(
                                               fontSize: 14,
-                                              color:
-                                                  index["change"] >= 0
-                                                      ? Colors.green
-                                                      : Colors.red,
+                                              fontWeight: FontWeight.w500,
                                             ),
+                                          ),
+                                        ),
+                                        Text(
+                                          index["change"] >= 0
+                                              ? "▲ ${index["change"]}%"
+                                              : "▼ ${index["change"]}%",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color:
+                                                index["change"] >= 0
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ],
@@ -151,80 +158,81 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               const Text(
-                'Trending Stocks:',
+                '🔥 Trending Stocks',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.white, Colors.blue.shade100],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        blurRadius: 5,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child:
-                      trendingStocks.isEmpty
-                          ? const Center(child: CircularProgressIndicator())
-                          : ListView.builder(
-                            itemCount: trendingStocks.length,
-                            itemBuilder: (context, index) {
-                              final stock = trendingStocks[index];
-                              return GestureDetector(
-                                onTap:
-                                    () => _navigateToStockDetails(
-                                      context,
-                                      stock["ticker"],
-                                    ),
-                                child: Card(
-                                  elevation: 3,
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: 8,
-                                    horizontal: 5,
+                child:
+                    trendingStocks.isEmpty
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                          itemCount: trendingStocks.length,
+                          itemBuilder: (context, index) {
+                            final stock = trendingStocks[index];
+                            return GestureDetector(
+                              onTap:
+                                  () => _navigateToStockDetails(
+                                    context,
+                                    stock["ticker"],
                                   ),
-                                  child: ListTile(
-                                    leading: Icon(
-                                      stock["change"] >= 0
-                                          ? Icons.trending_up
-                                          : Icons.trending_down,
-                                      color:
-                                          stock["change"] >= 0
-                                              ? Colors.green
-                                              : Colors.red,
-                                    ),
-                                    title: Text(
-                                      stock["name"],
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    subtitle: Text(
-                                      stock["change"] >= 0
-                                          ? "▲ ${stock["change"].toStringAsFixed(2)}%"
-                                          : "▼ ${stock["change"].toStringAsFixed(2)}%",
-                                      style: TextStyle(
-                                        fontSize: 14,
+                              child: Card(
+                                elevation: 4,
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 4,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 16,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        stock["change"] >= 0
+                                            ? Icons.trending_up
+                                            : Icons.trending_down,
                                         color:
                                             stock["change"] >= 0
                                                 ? Colors.green
                                                 : Colors.red,
                                       ),
-                                    ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          stock["name"],
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        stock["change"] >= 0
+                                            ? "▲ ${stock["change"].toStringAsFixed(2)}%"
+                                            : "▼ ${stock["change"].toStringAsFixed(2)}%",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              stock["change"] >= 0
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                ),
+                              ),
+                            );
+                          },
+                        ),
               ),
             ],
           ),

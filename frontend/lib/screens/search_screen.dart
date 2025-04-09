@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/functions/api_services.dart';
-import 'package:frontend/screens/stock_details_screen.dart'; // Replace with your actual path
+import 'package:frontend/screens/stock_details_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -11,14 +11,21 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
   bool _isLoading = false;
+  bool _hasSearched = false;
 
   Future<void> _performSearch(String query) async {
     if (query.isEmpty) {
-      setState(() => _searchResults = []);
+      setState(() {
+        _searchResults = [];
+        _hasSearched = false;
+      });
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasSearched = true;
+    });
 
     try {
       final data = await ApiService.searchStocks(query);
@@ -47,34 +54,59 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search Stocks'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text(
+          'Search Stocks',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+        backgroundColor: Colors.indigo.shade700,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
-      body: Padding(
+      body: Container(
+        color: Colors.indigo.shade50,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _searchController,
+              style: const TextStyle(fontSize: 14),
               decoration: InputDecoration(
                 labelText: 'Search for a stock',
+                labelStyle: const TextStyle(fontSize: 14),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () => _performSearch(_searchController.text),
+                  icon: const Icon(Icons.search, color: Colors.indigo),
+                  onPressed:
+                      () => _performSearch(_searchController.text.trim()),
                 ),
               ),
               onChanged: _performSearch,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _isLoading
-                ? const CircularProgressIndicator()
+                ? const Center(child: CircularProgressIndicator())
                 : Expanded(
                   child:
                       _searchResults.isEmpty
-                          ? const Center(child: Text('No stocks found'))
+                          ? Center(
+                            child: Text(
+                              _hasSearched
+                                  ? 'No stocks found'
+                                  : 'Search to see stocks',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
                           : ListView.builder(
                             itemCount: _searchResults.length,
                             itemBuilder: (context, index) {
@@ -82,18 +114,34 @@ class _SearchScreenState extends State<SearchScreen> {
                               final name = stock['name'] ?? 'Unnamed Stock';
                               final ticker = stock['ticker'] ?? '';
 
-                              return ListTile(
-                                leading: const Icon(
-                                  Icons.trending_up,
-                                  color: Colors.green,
+                              return Card(
+                                elevation: 3,
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                  horizontal: 4,
                                 ),
-                                title: Text(name),
-                                subtitle: Text(ticker),
-                                onTap: () {
-                                  if (ticker.isNotEmpty) {
-                                    _navigateToDetails(ticker);
-                                  }
-                                },
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  leading: const Icon(
+                                    Icons.show_chart,
+                                    color: Colors.indigo,
+                                  ),
+                                  title: Text(
+                                    name,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  subtitle: Text(
+                                    ticker,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                  onTap: () {
+                                    if (ticker.isNotEmpty) {
+                                      _navigateToDetails(ticker);
+                                    }
+                                  },
+                                ),
                               );
                             },
                           ),

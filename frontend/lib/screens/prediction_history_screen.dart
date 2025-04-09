@@ -57,7 +57,7 @@ class _PredictionHistoryScreenState extends State<PredictionHistoryScreen>
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to fetch predictions in screen')),
+        const SnackBar(content: Text('Failed to fetch predictions')),
       );
     }
   }
@@ -74,10 +74,10 @@ class _PredictionHistoryScreenState extends State<PredictionHistoryScreen>
       appBar: AppBar(
         title: const Text(
           'Prediction History',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontSize: 18),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: Colors.indigo.shade700,
         elevation: 0,
       ),
       body:
@@ -86,104 +86,111 @@ class _PredictionHistoryScreenState extends State<PredictionHistoryScreen>
               : FadeTransition(
                 opacity: _fadeAnimation,
                 child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blueAccent, Colors.white],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: predictionHistory.length,
-                    itemBuilder: (context, index) {
-                      final history = predictionHistory[index];
-                      final currentPrice =
-                          double.tryParse(
-                            history['currentPrice'].toString().replaceAll(
-                              RegExp(r'[^0-9\.]'),
-                              '',
-                            ),
-                          ) ??
-                          0.0;
-                      final predictedPrice =
-                          double.tryParse(
-                            history['predictedPrice'].toString().replaceAll(
-                              RegExp(r'[^0-9\.]'),
-                              '',
-                            ),
-                          ) ??
-                          0.0;
-                      final isPositive = predictedPrice >= currentPrice;
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.shade100,
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  isPositive
-                                      ? Icons.trending_up_rounded
-                                      : Icons.trending_down_rounded,
-                                  color: isPositive ? Colors.green : Colors.red,
-                                  size: 28,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    '${history['ticker']} (${history['model']})',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Date: ${history['date']}',
+                  color: Colors.indigo.shade50,
+                  padding: const EdgeInsets.all(16),
+                  child:
+                      predictionHistory.isEmpty
+                          ? const Center(
+                            child: Text(
+                              'No prediction history available.',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Current Price: ${history['currentPrice']}',
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Predicted Price: ${history['predictedPrice']}',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: isPositive ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          )
+                          : ListView.builder(
+                            itemCount: predictionHistory.length,
+                            itemBuilder: (context, index) {
+                              final history = predictionHistory[index];
+                              final currentPrice =
+                                  double.tryParse(
+                                    history['currentPrice']
+                                        .toString()
+                                        .replaceAll(RegExp(r'[^0-9\.]'), ''),
+                                  ) ??
+                                  0.0;
+                              final predictedPrice =
+                                  double.tryParse(
+                                    history['predictedPrice']
+                                        .toString()
+                                        .replaceAll(RegExp(r'[^0-9\.]'), ''),
+                                  ) ??
+                                  0.0;
+                              final isPositive = predictedPrice >= currentPrice;
+
+                              return Card(
+                                elevation: 3,
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                  horizontal: 4,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            isPositive
+                                                ? Icons.trending_up
+                                                : Icons.trending_down,
+                                            color:
+                                                isPositive
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              '${history['ticker']} (${history['model']})',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        'Date: ${history['date']}',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Current Price: ${history['currentPrice']}',
+                                        style: const TextStyle(fontSize: 13),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Predicted Price: ${history['predictedPrice']}',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color:
+                                              isPositive
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                 ),
               ),
     );

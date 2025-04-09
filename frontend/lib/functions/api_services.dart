@@ -43,6 +43,35 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>?> getSentiment(String ticker) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('jwt_token');
+
+      if (token == null) {
+        throw Exception("User not authenticated");
+      }
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/sentiment?ticker=$ticker'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print(response.body);
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        return {"sentiment": data["sentiment"], "summary": data["summary"]};
+      } else {
+        throw Exception("Failed to fetch sentiment: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching sentiment for $ticker: $e");
+      return null;
+    }
+  }
+
   static Future<List<dynamic>> getMarketOverview() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();

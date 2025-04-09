@@ -68,8 +68,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text(
+          'Profile',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+        backgroundColor: Colors.indigo.shade700,
         elevation: 0,
         actions: [
           IconButton(
@@ -81,13 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.white],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+          color: Colors.grey.shade100,
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
             children: [
@@ -112,55 +109,70 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildProfileCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        gradient: LinearGradient(
+          colors: [Colors.indigo.shade600, Colors.indigo.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.blue.shade200.withOpacity(0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.indigo.withOpacity(0.2),
+            blurRadius: 12,
             offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 40,
-            backgroundImage: AssetImage('assets/profile.jpg'),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child:
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _userName,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+      child:
+          _isLoading
+              ? const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              )
+              : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome,',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _userName,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.email_outlined,
+                        size: 20,
+                        color: Colors.white70,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
                           _userEmail,
                           style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 16,
                             color: Colors.white70,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-          ),
-        ],
-      ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 
@@ -179,7 +191,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.shade100,
+              color: Colors.indigo.shade100,
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -187,12 +199,16 @@ class _ProfileScreenState extends State<ProfileScreen>
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.blueAccent, size: 28),
+            Icon(icon, color: Colors.indigo.shade700, size: 28),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(fontSize: 18, color: Colors.black87),
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),

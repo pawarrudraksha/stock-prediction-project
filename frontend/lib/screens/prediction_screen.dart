@@ -45,88 +45,154 @@ class _PredictionScreenState extends State<PredictionScreen> {
     });
   }
 
+  Widget _buildPriceCard() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      switchInCurve: Curves.easeInOut,
+      switchOutCurve: Curves.easeInOut,
+      child:
+          (currentPrice != null || predictedPrice != null)
+              ? Card(
+                key: ValueKey('$currentPrice-$predictedPrice'),
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      if (currentPrice != null) ...[
+                        const Text(
+                          'Current Price:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.indigo,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          currentPrice!,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.indigo,
+                          ),
+                        ),
+                      ],
+                      if (predictedPrice != null) ...[
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Predicted Price:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.indigo,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          predictedPrice!,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.indigo,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              )
+              : const SizedBox.shrink(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Prediction - ${widget.ticker}'),
-        backgroundColor: Colors.blue.shade800,
+        title: Text(
+          'Prediction - ${widget.ticker}',
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+        ),
+        backgroundColor: Colors.indigo.shade700,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      body: Container(
+        color: Colors.indigo.shade50,
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 20),
-            Text(
+            const Text(
               'Select Prediction Model:',
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade900,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.indigo,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 50,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.blue.shade400),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedModel,
-                    icon: Icon(
-                      Icons.arrow_drop_down,
-                      color: Colors.blue.shade900,
-                    ),
-                    isExpanded: true,
-                    items:
-                        ['Random Forest', 'XGBoost']
-                            .map(
-                              (model) => DropdownMenuItem(
-                                value: model,
-                                child: Text(
-                                  model,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.blue.shade900,
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedModel = value!;
-                      });
-                    },
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.indigo.shade300),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedModel,
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.indigo),
+                  isExpanded: true,
+                  items:
+                      ['Random Forest', 'XGBoost'].map((model) {
+                        return DropdownMenuItem(
+                          value: model,
+                          child: Text(
+                            model,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.indigo,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedModel = value!;
+                    });
+                  },
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade700,
+                backgroundColor: Colors.indigo.shade700,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               onPressed: _predictStockPrice,
               child:
                   isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
                       : Text(
                         'Predict using $selectedModel',
                         style: const TextStyle(
@@ -135,60 +201,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
                         ),
                       ),
             ),
-            const SizedBox(height: 30),
-            if (currentPrice != null || predictedPrice != null)
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      if (currentPrice != null) ...[
-                        Text(
-                          'Current Price:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade900,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          currentPrice!,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
-                      ],
-                      if (predictedPrice != null) ...[
-                        const SizedBox(height: 20),
-                        Text(
-                          'Predicted Price:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade900,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          predictedPrice!,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
+            const SizedBox(height: 20),
+            _buildPriceCard(),
           ],
         ),
       ),
