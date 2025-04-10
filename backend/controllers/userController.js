@@ -14,13 +14,12 @@ exports.predictStock = async (req, res) => {
   try {
     // Send request to Flask ML API
     const response = await axios.post(
-      "https://ml-api-836754351809.asia-south1.run.app/predict",
+      "https://stock-prediction-project-836754351809.asia-south1.run.app/predict",
       {
         ticker,
         model,
       }
     );
-    console.log("ML API response:", response.data);
     // Save prediction in MongoDB
     const prediction = new Prediction({
       userId: req.user.userId,
@@ -33,7 +32,6 @@ exports.predictStock = async (req, res) => {
     await prediction.save();
     res.json(prediction);
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: "Prediction failed" });
   }
 };
@@ -244,9 +242,15 @@ exports.getStockSentiment = async (req, res) => {
     const { ticker } = req.query;
     if (!ticker) return res.status(400).json({ error: "Ticker is required" });
 
-    const response = await axios.post("http://localhost:5001/sentiment", {
-      ticker,
-    });
+    // const response = await axios.post("http://localhost:5001/sentiment", {
+    //   ticker,
+    // });
+    const response = await axios.post(
+      "https://stock-prediction-project-836754351809.asia-south1.run.app/sentiment",
+      {
+        ticker,
+      }
+    );
 
     res.json(response.data);
   } catch (error) {
