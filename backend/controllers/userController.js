@@ -13,11 +13,14 @@ exports.predictStock = async (req, res) => {
 
   try {
     // Send request to Flask ML API
-    const response = await axios.post("http://localhost:5001/predict", {
-      ticker,
-      model,
-    });
-
+    const response = await axios.post(
+      "https://ml-api-836754351809.asia-south1.run.app/predict",
+      {
+        ticker,
+        model,
+      }
+    );
+    console.log("ML API response:", response.data);
     // Save prediction in MongoDB
     const prediction = new Prediction({
       userId: req.user.userId,
@@ -30,6 +33,7 @@ exports.predictStock = async (req, res) => {
     await prediction.save();
     res.json(prediction);
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Prediction failed" });
   }
 };
