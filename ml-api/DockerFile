@@ -14,7 +14,7 @@ COPY . .
 # Expose port 5001 (or whatever port your Flask app uses)
 EXPOSE 5001
 
-# Set environment variable for Flask
+# Set environment variable for Flas
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_PORT=5001
 
