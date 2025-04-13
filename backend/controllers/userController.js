@@ -14,7 +14,7 @@ exports.predictStock = async (req, res) => {
   try {
     // Send request to Flask ML API
     const response = await axios.post(
-      "https://stock-prediction-project-836754351809.asia-south1.run.app/predict",
+      "https://stock-project-ml-api-836754351809.us-central1.run.app/predict",
       {
         ticker,
         model,
@@ -246,7 +246,7 @@ exports.getStockSentiment = async (req, res) => {
     //   ticker,
     // });
     const response = await axios.post(
-      "https://stock-prediction-project-836754351809.asia-south1.run.app/sentiment",
+      "https://stock-project-ml-api-836754351809.us-central1.run.app/sentiment",
       {
         ticker,
       }
@@ -266,7 +266,7 @@ exports.getRLTradingSimulation = async (req, res) => {
     if (!ticker) return res.status(400).json({ error: "Ticker is required" });
 
     const response = await axios.post(
-      "https://stock-prediction-project-836754351809.asia-south1.run.app/simulate", // Flask endpoint
+      "https://stock-project-ml-api-836754351809.us-central1.run.app/simulate", // Flask endpoint
       { ticker }
     );
 
