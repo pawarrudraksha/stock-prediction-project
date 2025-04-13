@@ -258,3 +258,21 @@ exports.getStockSentiment = async (req, res) => {
     res.status(500).json({ error: "Sentiment analysis failed" });
   }
 };
+
+exports.getRLTradingSimulation = async (req, res) => {
+  try {
+    const ticker = req.params.ticker; // now coming from URL
+
+    if (!ticker) return res.status(400).json({ error: "Ticker is required" });
+
+    const response = await axios.post(
+      "https://stock-prediction-project-836754351809.asia-south1.run.app/simulate", // Flask endpoint
+      { ticker }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error running RL simulation:", error);
+    res.status(500).json({ error: "RL trading simulation failed" });
+  }
+};

@@ -3,8 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserServices {
-  static const String _baseUrl = 'http://10.0.2.2:3000/api/auth';
-  static const String _baseUrl2 = 'http://10.0.2.2:3000/api/stocks';
+  // static const String _baseUrl = 'http://10.0.2.2:3000/api/auth';
+  // static const String _baseUrl2 = 'http://10.0.2.2:3000/api/stocks';
+  static const String _baseUrl =
+      'https://stock-prediction-project-ject.onrender.com/api/auth';
+  static const String _baseUrl2 =
+      'https://stock-prediction-project-ject.onrender.com/api/stocks';
 
   static Future<Map<String, dynamic>> getUserProfile() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -101,8 +105,6 @@ class UserServices {
   }
 
   static Future<void> removeFromWatchlist(String stockId) async {
-    print("hferoihgpewrghpetrjhtrkhetrhrhtrhrte");
-    print(stockId);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwt_token');
 

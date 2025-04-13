@@ -15,6 +15,7 @@ router.get("/sentiment", auth, userController.getStockSentiment);
 router.get("/trending", auth, userController.getTrendingStocks);
 router.get("/overview", auth, userController.getMarketOverview);
 router.get("/stock-details", auth, userController.getStockDetails);
+router.get("/simulate/:ticker", auth, userController.getRLTradingSimulation);
 
 // User prediction history
 router.get("/predictions", auth, userController.getUserPredictions);

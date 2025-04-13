@@ -104,6 +104,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -123,8 +124,10 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
         ],
       ),
       body:
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
+          isSentimentLoading
+              ? const Center(
+                child: CircularProgressIndicator(),
+              ) // Show loading until sentiment is fetched
               : FadeTransition(
                 opacity: _fadeAnimation,
                 child: SingleChildScrollView(

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String _baseUrl = 'http://10.0.2.2:3000/api/stocks';
+  // static const String _baseUrl = 'http://10.0.2.2:3000/api/stocks';
+  static const String _baseUrl =
+      'https://stock-prediction-project-ject.onrender.com/api/stocks';
 
   static Future<List<dynamic>> getTrendingStocks() async {
     try {
@@ -59,7 +61,6 @@ class ApiService {
           'Authorization': 'Bearer $token',
         },
       );
-      print(response.body);
       if (response.statusCode == 200) {
         Map<String, dynamic> data = json.decode(response.body);
         return {"sentiment": data["sentiment"], "summary": data["summary"]};
@@ -168,8 +169,6 @@ class ApiService {
       body: jsonEncode({"ticker": ticker, "model": formattedModel}),
     );
 
-    print(response.body);
-
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -198,6 +197,69 @@ class ApiService {
       return json.decode(response.body); // Now returns a Map with "stocks" key
     } else {
       throw Exception('Failed to load stock search results');
+    }
+  }
+
+  static Future<Map<String, dynamic>?> fetchRLSimulation(
+    String stockSymbol,
+  ) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('jwt_token');
+
+      if (token == null) {
+        throw Exception("User not authenticated");
+      }
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/simulate/$stockSymbol'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+
+        // Convert all numeric values to double
+        List<Map<String, dynamic>> history = [];
+        if (data['daily_log'] != null) {
+          history =
+              (data['daily_log'] as List).map((item) {
+                return {
+                  'action': item['action'],
+                  'date': item['date'],
+                  'portfolio_value':
+                      (item['portfolio_value'] as num).toDouble(),
+                  'price': (item['price'] as num).toDouble(),
+                  'shares':
+                      item['shares'] != null
+                          ? (item['shares'] as num).toDouble()
+                          : 0.0,
+                };
+              }).toList();
+        }
+
+        // Extract initial_cash and final_cash from the summary
+        double initialCash =
+            (data['summary']['initial_value'] as num).toDouble();
+        double finalCash = (data['summary']['final_value'] as num).toDouble();
+        double totalProfit = finalCash - initialCash;
+        return {
+          "history": history,
+          "initial_cash": initialCash, // Corresponding to initial_value
+          "final_cash": finalCash, // Corresponding to final_value
+          "total_profit": totalProfit,
+        };
+      } else {
+        throw Exception(
+          "Failed to fetch RL simulation: ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      print("Error fetching RL simulation for $stockSymbol: $e");
+      return null;
     }
   }
 }
