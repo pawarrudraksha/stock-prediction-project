@@ -388,19 +388,28 @@ class _RLTradingSimulatorScreenState extends State<RLTradingSimulatorScreen> {
                                   showTitles: true,
                                   reservedSize: 40,
                                   interval: 50,
-                                  getTitlesWidget:
-                                      (value, _) => Text('₹${value.toInt()}'),
+                                  getTitlesWidget: (value, _) {
+                                    return Text(
+                                      '₹${value.toInt()}',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                      ), // Reduced font size here
+                                    );
+                                  },
                                 ),
                               ),
                               bottomTitles: AxisTitles(
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   interval: 50,
-                                  getTitlesWidget:
-                                      (value, _) => Transform.rotate(
-                                        angle: -0.5,
-                                        child: Text('T${value.toInt()}'),
-                                      ),
+                                  getTitlesWidget: (value, _) {
+                                    return Text(
+                                      '₹${value.toInt()}',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                      ), // Reduced font size here
+                                    );
+                                  },
                                 ),
                               ),
                               rightTitles: AxisTitles(

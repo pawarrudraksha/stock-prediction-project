@@ -316,7 +316,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Past 7 Days Performance',
+              'Past 52 Days Performance',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),

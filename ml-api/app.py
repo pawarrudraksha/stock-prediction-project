@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS  # Optional: Enable this if you're using a frontend
 import pickle
 import yfinance as yf
+import yfinance.shared as shared
 import numpy as np
 import os
 import requests
@@ -14,6 +15,13 @@ import pandas as pd
 import json
 
 from datetime import datetime, timedelta
+# Patch yfinance to use a custom User-Agent
+session = requests.Session()
+session.headers.update({
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'  # Looks like a real browser
+})
+shared._requests = session
+
 
 
 load_dotenv()
@@ -41,7 +49,7 @@ def load_q_table(ticker):
 sentiment_pipeline = pipeline("sentiment-analysis", model="ProsusAI/finbert")
 
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-
+# prediction 
 def load_model(ticker, model_type):
     model_path = os.path.join(MODEL_DIR, f"{ticker}_{model_type}.pkl")
     if os.path.exists(model_path):
@@ -141,7 +149,7 @@ def analyze_sentiment():
     return jsonify({"ticker": ticker, "sentiment": overall_sentiment.capitalize()})
 
 # RL ENDPOINT
-
+# simulates trading steps : cash/shares and rewards
 class EnhancedTradingEnvironment:
     def __init__(self, data):
         self.data = data
@@ -214,6 +222,7 @@ class EnhancedTradingEnvironment:
             print(f"Error in step: {e}")
             return None, 0.0, True
 
+# makes decisions and learns using Q-learning
 class ImprovedRLAgent:
     def __init__(self, actions):
         self.actions = actions
