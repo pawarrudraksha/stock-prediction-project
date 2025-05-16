@@ -296,6 +296,7 @@ def simulate_trading():
         agent = ImprovedRLAgent(actions=[0, 1, 2])
         loaded_q = load_q_table(ticker)
 
+        # Train only if no saved model
         if loaded_q:
             agent.q_table = loaded_q
         else:
@@ -309,6 +310,7 @@ def simulate_trading():
                     state = next_state
             save_q_table(ticker, agent.q_table)
 
+        # Run simulation with safe action execution
         env.reset()
         done = False
         portfolio_history = []
@@ -320,6 +322,13 @@ def simulate_trading():
         while not done:
             state = env._get_state()
             intended_action = np.argmax(agent.q_table[state])
+
+            # Prevent invalid Buy/Sell decisions
+            if intended_action == 1 and env.shares > 0:
+                intended_action = 0  # Already holding, force Hold
+            elif intended_action == 2 and env.shares == 0:
+                intended_action = 0  # Nothing to sell, force Hold
+
             next_state, reward, done, actual_action, shares_tx, price = env.step(intended_action)
 
             date = str(dates[step].date()) if step < len(dates) else "N/A"
@@ -334,9 +343,9 @@ def simulate_trading():
                 "portfolio_value": round(env.portfolio_value, 2)
             })
 
-
             step += 1
 
+        # Metrics
         returns = np.array(env.returns)
         sharpe = returns.mean() / returns.std() * np.sqrt(252) if len(returns) > 1 else 0.0
         win_rate = float(np.mean(returns > 0)) if len(returns) > 0 else 0.0
@@ -364,6 +373,7 @@ def simulate_trading():
 
     except Exception as e:
         return jsonify({'error': str(e), 'status': 'error'}), 500
+
 
 
 if __name__ == '__main__':

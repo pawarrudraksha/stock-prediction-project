@@ -125,124 +125,129 @@ class _PredictionScreenState extends State<PredictionScreen> {
       ),
       body: Container(
         color: Colors.indigo.shade50,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              'Select Prediction Model:',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.indigo,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.indigo.shade300),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: selectedModel,
-                  icon: const Icon(Icons.arrow_drop_down, color: Colors.indigo),
-                  isExpanded: true,
-                  items:
-                      ['Random Forest', 'XGBoost'].map((model) {
-                        return DropdownMenuItem(
-                          value: model,
-                          child: Text(
-                            model,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.indigo,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedModel = value!;
-                    });
-                  },
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Select Prediction Model:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.indigo,
+                  ),
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Model Guidance Section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.indigo.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Model Guidance:',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.indigo,
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.indigo.shade300),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedModel,
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.indigo,
+                      ),
+                      isExpanded: true,
+                      items:
+                          ['Random Forest', 'XGBoost'].map((model) {
+                            return DropdownMenuItem(
+                              value: model,
+                              child: Text(
+                                model,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedModel = value!;
+                        });
+                      },
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    '• Random Forest: A robust and easy-to-use model good for general stock price prediction. '
-                    'It performs well on smaller datasets and is less prone to overfitting.',
-                    style: TextStyle(fontSize: 14, color: Colors.indigo),
-                  ),
-                  SizedBox(height: 6),
-                  Text(
-                    '• XGBoost: A powerful gradient boosting model that usually offers higher accuracy, '
-                    'especially for complex patterns and larger datasets, but might require more tuning.',
-                    style: TextStyle(fontSize: 14, color: Colors.indigo),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo.shade700,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: _predictStockPrice,
-              child:
-                  isLoading
-                      ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                      : Text(
-                        'Predict using $selectedModel',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Model Guidance:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.indigo,
                         ),
                       ),
+                      SizedBox(height: 8),
+                      Text(
+                        '• Random Forest: A robust and easy-to-use model good for general stock price prediction. '
+                        'It performs well on smaller datasets and is less prone to overfitting.',
+                        style: TextStyle(fontSize: 14, color: Colors.indigo),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        '• XGBoost: A powerful gradient boosting model that usually offers higher accuracy, '
+                        'especially for complex patterns and larger datasets, but might require more tuning.',
+                        style: TextStyle(fontSize: 14, color: Colors.indigo),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo.shade700,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: _predictStockPrice,
+                    child:
+                        isLoading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text(
+                              'Predict using $selectedModel',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Center(child: _buildPriceCard()),
+              ],
             ),
-            const SizedBox(height: 20),
-            _buildPriceCard(),
-          ],
+          ),
         ),
       ),
     );

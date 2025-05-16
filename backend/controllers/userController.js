@@ -89,12 +89,43 @@ exports.getStockDetails = async (req, res) => {
   }
 };
 
-// Get trending stocks
+// // Get trending stocks
+// exports.getTrendingStocks = async (req, res) => {
+//   try {
+//     const trendingSymbols = ["AAPL", "TSLA", "VGT"];
+
+//     // Fetch each stock separately
+//     const stockPromises = trendingSymbols.map((symbol) =>
+//       yahooFinance.quote(symbol)
+//     );
+//     const stocksData = await Promise.all(stockPromises);
+
+//     const stocks = stocksData.map((stock) => ({
+//       ticker: stock.symbol,
+//       name: stock.longName || stock.shortName,
+//       price: stock.regularMarketPrice,
+//       change: stock.regularMarketChangePercent.toFixed(2),
+//     }));
+
+//     res.json(stocks);
+//   } catch (error) {
+//     console.error("Error fetching trending stocks:", error);
+//     res.status(500).json({ error: "Failed to fetch trending stocks" });
+//   }
+// };
+
+// Get dynamic trending stocks
 exports.getTrendingStocks = async (req, res) => {
   try {
-    const trendingSymbols = ["AAPL", "TSLA", "VGT"];
+    // Fetch trending tickers from Yahoo Finance's trending endpoint (for US market)
+    const trendingResponse = await axios.get(
+      "https://query1.finance.yahoo.com/v1/finance/trending/US"
+    );
 
-    // Fetch each stock separately
+    const trendingSymbols = trendingResponse.data.finance.result[0].quotes
+      .slice(0, 3) // limit to top 3 trending
+      .map((quote) => quote.symbol);
+
     const stockPromises = trendingSymbols.map((symbol) =>
       yahooFinance.quote(symbol)
     );
@@ -109,7 +140,7 @@ exports.getTrendingStocks = async (req, res) => {
 
     res.json(stocks);
   } catch (error) {
-    console.error("Error fetching trending stocks:", error);
+    console.error("Error fetching dynamic trending stocks:", error);
     res.status(500).json({ error: "Failed to fetch trending stocks" });
   }
 };
