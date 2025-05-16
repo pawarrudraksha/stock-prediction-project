@@ -32,18 +32,10 @@ CORS(app)  # Enable cross-origin requests
 # Directory for storing trained models
 MODEL_DIR = "models/"
 os.makedirs(MODEL_DIR, exist_ok=True)
-def save_q_table(ticker, q_table):
-    model_path = os.path.join(MODEL_DIR, f"{ticker}_qtable.pkl")
-    with open(model_path, 'wb') as f:
-        pickle.dump(dict(q_table), f)
 
-def load_q_table(ticker):
-    model_path = os.path.join(MODEL_DIR, f"{ticker}_qtable.pkl")
-    if os.path.exists(model_path):
-        with open(model_path, 'rb') as f:
-            q_table_data = pickle.load(f)
-            return defaultdict(lambda: np.random.uniform(-1, 1, 3), q_table_data)
-    return None
+
+
+
 
 # Load FinBERT sentiment model
 sentiment_pipeline = pipeline("sentiment-analysis", model="ProsusAI/finbert")
@@ -150,13 +142,28 @@ def analyze_sentiment():
 
 # RL ENDPOINT
 # simulates trading steps : cash/shares and rewards
+
+
+def save_q_table(ticker, q_table):
+    model_path = os.path.join(MODEL_DIR, f"{ticker}_qtable.pkl")
+    with open(model_path, 'wb') as f:
+        pickle.dump(dict(q_table), f)
+
+def load_q_table(ticker):
+    model_path = os.path.join(MODEL_DIR, f"{ticker}_qtable.pkl")
+    if os.path.exists(model_path):
+        with open(model_path, 'rb') as f:
+            q_table_data = pickle.load(f)
+            return defaultdict(lambda: np.random.uniform(-1, 1, 3), q_table_data)
+    return None
+
 class EnhancedTradingEnvironment:
     def __init__(self, data):
         self.data = data
         self.reset()
-    
+
     def reset(self):
-        self.current_step = 30  # Start after we have enough data for all indicators
+        self.current_step = 30
         self.cash = 10000.0
         self.shares = 0.0
         self.portfolio_history = [10000.0]
@@ -164,9 +171,8 @@ class EnhancedTradingEnvironment:
         self.returns = []
         self.consecutive_holds = 0
         return self._get_state()
-    
+
     def _get_state(self):
-        # Convert all values to native Python types
         try:
             features = {
                 'price_ma5_ratio': float(self.data['Close'].iloc[self.current_step] / self.data['MA20'].iloc[self.current_step]),
@@ -175,69 +181,76 @@ class EnhancedTradingEnvironment:
                 'position': 1 if self.shares > 0 else 0,
                 'hold_duration': float(min(self.consecutive_holds / 10, 1))
             }
-            # Create hashable tuple with rounded values
             return tuple(round(x, 2) for x in features.values())
         except Exception as e:
             print(f"Error creating state: {e}")
             return (0, 0, 0, 0, 0)
-    
+
     def step(self, action):
         try:
             current_price = float(self.data['Close'].iloc[self.current_step])
             reward = 0.0
             done = False
-            
-            if action == 0:  # Hold
+            shares_transacted = 0.0
+            action_type = action
+
+            if action == 0:
                 self.consecutive_holds += 1
                 reward -= 0.001 * self.consecutive_holds
-            else:
-                self.consecutive_holds = 0
 
-            if action == 1 and self.shares == 0:  # Buy
+            elif action == 1 and self.shares == 0:
+                self.consecutive_holds = 0
                 self.shares = float(self.cash / current_price)
+                shares_transacted = self.shares
                 self.cash = 0.0
                 self.entry_price = current_price
                 reward -= 0.002
-            elif action == 2 and self.shares > 0:  # Sell
-                self.cash = float(self.shares * current_price)
-                trade_return = float((current_price - self.entry_price) / self.entry_price)
-                reward += trade_return * 2
-                reward -= 0.002
-                self.returns.append(trade_return)
-                self.shares = 0.0
+
+            elif action == 2:
+                if self.shares > 0:
+                    self.consecutive_holds = 0
+                    self.cash = float(self.shares * current_price)
+                    shares_transacted = self.shares
+                    trade_return = float((current_price - self.entry_price) / self.entry_price)
+                    reward += trade_return * 2
+                    reward -= 0.002
+                    self.returns.append(trade_return)
+                    self.shares = 0.0
+                else:
+                    action_type = 0
+                    self.consecutive_holds += 1
+                    reward -= 0.001 * self.consecutive_holds
 
             new_value = float(self.cash + (self.shares * current_price))
             self.portfolio_value = new_value
             self.portfolio_history.append(new_value)
-            
+
             if len(self.portfolio_history) > 1:
                 reward += float((new_value - self.portfolio_history[-2]) / self.portfolio_history[-2])
-            
+
             self.current_step += 1
             done = self.current_step >= len(self.data) - 1
-            
             next_state = self._get_state() if not done else None
-            return next_state, reward, done
+            return next_state, reward, done, action_type, shares_transacted, current_price
         except Exception as e:
             print(f"Error in step: {e}")
-            return None, 0.0, True
+            return None, 0.0, True, action, 0.0, 0.0
 
-# makes decisions and learns using Q-learning
 class ImprovedRLAgent:
     def __init__(self, actions):
         self.actions = actions
-        self.q_table = defaultdict(lambda: np.random.uniform(-1, 1, len(actions)))  # Random initialization
-        self.alpha = 0.3  # Faster learning
+        self.q_table = defaultdict(lambda: np.random.uniform(-1, 1, len(actions)))
+        self.alpha = 0.3
         self.gamma = 0.9
-        self.epsilon = 0.5  # More exploration
+        self.epsilon = 0.5
         self.epsilon_min = 0.1
         self.epsilon_decay = 0.98
-    
+
     def choose_action(self, state):
         if np.random.random() < self.epsilon:
             return np.random.choice(self.actions)
         return np.argmax(self.q_table[state])
-    
+
     def learn(self, state, action, reward, next_state):
         current_q = self.q_table[state][action]
         next_max = np.max(self.q_table[next_state]) if next_state is not None else 0
@@ -250,7 +263,7 @@ def preprocess_data(data):
         data['MA5'] = data['Close'].rolling(5).mean().astype(float)
         data['MA20'] = data['Close'].rolling(20).mean().astype(float)
         data['Volatility'] = data['Close'].pct_change().rolling(20).std().astype(float)
-        
+
         delta = data['Close'].diff().astype(float)
         gain = delta.where(delta > 0, 0.0)
         loss = -delta.where(delta < 0, 0.0)
@@ -258,78 +271,72 @@ def preprocess_data(data):
         avg_loss = loss.rolling(14).mean().astype(float)
         rs = avg_gain / avg_loss
         data['RSI'] = (100 - (100 / (1 + rs))).astype(float)
-        
+
         return data.dropna()
     except Exception as e:
         print(f"Error preprocessing data: {e}")
         return pd.DataFrame()
-   
-      
+
 @app.route('/simulate', methods=['POST'])
 def simulate_trading():
     try:
         ticker = request.json.get('ticker', 'AAPL')
-        
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
         data = yf.download(ticker, start=start_date, end=end_date)
-        
+
         if data.empty:
             return jsonify({'error': 'No data available for this ticker'}), 400
-        
+
         data = preprocess_data(data)
         if len(data) < 50:
             return jsonify({'error': 'Not enough data points'}), 400
-        
+
         env = EnhancedTradingEnvironment(data)
         agent = ImprovedRLAgent(actions=[0, 1, 2])
         loaded_q = load_q_table(ticker)
-        
+
         if loaded_q:
             agent.q_table = loaded_q
-            print(f"✅ Loaded existing Q-table for {ticker}")
         else:
-            print(f"🛠️ No saved Q-table for {ticker}. Training now...")
-            # Train the agent
             for episode in range(50):
                 state = env.reset()
                 done = False
                 while not done:
                     action = agent.choose_action(state)
-                    next_state, reward, done = env.step(action)
+                    next_state, reward, done, *_ = env.step(action)
                     agent.learn(state, action, reward, next_state)
                     state = next_state
             save_q_table(ticker, agent.q_table)
 
-        # Now simulate using the trained or loaded model
         env.reset()
         done = False
         portfolio_history = []
         actions_taken = []
         daily_log = []
-        dates = list(data.index[-(len(data) - 30):])  # match env.start_step
-
+        dates = list(data.index[-(len(data) - 30):])
         step = 0
+
         while not done:
             state = env._get_state()
-            action = np.argmax(agent.q_table[state])
-            _, _, done = env.step(action)
-            
+            intended_action = np.argmax(agent.q_table[state])
+            next_state, reward, done, actual_action, shares_tx, price = env.step(intended_action)
+
             date = str(dates[step].date()) if step < len(dates) else "N/A"
-            current_price = float(data['Close'].iloc[env.current_step - 1]) if env.current_step - 1 < len(data) else 0.0
-            
             portfolio_history.append(env.portfolio_value)
-            actions_taken.append(int(action))
-            
+            actions_taken.append(actual_action)
+
             daily_log.append({
                 "date": date,
-                "action": {0: "Hold", 1: "Buy", 2: "Sell"}.get(action, "Unknown"),
-                "price": round(current_price, 2),
+                "action": {0: "Hold", 1: "Buy", 2: "Sell"}.get(actual_action, "Unknown"),
+                "shares": round(shares_tx, 2),
+                "price": round(price, 2),
                 "portfolio_value": round(env.portfolio_value, 2)
             })
+
+
             step += 1
 
-        # Metrics
         returns = np.array(env.returns)
         sharpe = returns.mean() / returns.std() * np.sqrt(252) if len(returns) > 1 else 0.0
         win_rate = float(np.mean(returns > 0)) if len(returns) > 0 else 0.0
@@ -342,8 +349,6 @@ def simulate_trading():
             "start_date": str(start_date.date()),
             "end_date": str(end_date.date()),
             "episode_count": 0 if loaded_q else 50,
-
-            # 📈 Summary
             "summary": {
                 "initial_value": 10000.0,
                 "final_value": round(final_value, 2),
@@ -352,17 +357,13 @@ def simulate_trading():
                 "win_rate": round(win_rate * 100, 2),
                 "trade_count": sum(1 for a in actions_taken if a != 0)
             },
-
-            # 📊 Detailed daily log for table or chart
             "daily_log": daily_log
         }
 
-
         return jsonify(response)
-    
+
     except Exception as e:
         return jsonify({'error': str(e), 'status': 'error'}), 500
-
 
 
 if __name__ == '__main__':

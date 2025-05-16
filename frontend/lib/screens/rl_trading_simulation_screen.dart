@@ -99,9 +99,8 @@ class _RLTradingSimulatorScreenState extends State<RLTradingSimulatorScreen> {
       final price = trade['price']?.toDouble() ?? 0.0;
       final action = trade['action'] ?? '';
       final shares = trade['shares']?.toDouble() ?? 0.0;
-      final date = trade['date'] ?? ''; // Get the date from the trade history
+      final date = trade['date'] ?? '';
 
-      // Format the date to a more readable format
       final formattedDate = _formatDate(date);
 
       if (action == 'Buy') {
@@ -113,8 +112,9 @@ class _RLTradingSimulatorScreenState extends State<RLTradingSimulatorScreen> {
             leading: const Icon(Icons.shopping_cart, color: Colors.blue),
             title: Text('Buy @ ${_formatCurrency(price)}'),
             subtitle: Text(
-              'Date: $formattedDate',
-            ), // Display the formatted date
+              'Date: $formattedDate\nShares: ${shares.toStringAsFixed(2)}',
+            ),
+            isThreeLine: true,
           ),
         );
       } else if (action == 'Sell') {
@@ -146,8 +146,9 @@ class _RLTradingSimulatorScreenState extends State<RLTradingSimulatorScreen> {
             ),
             title: Text('Sell @ ${_formatCurrency(price)}'),
             subtitle: Text(
-              'Date: $formattedDate',
-            ), // Display the formatted date
+              'Date: $formattedDate\nShares: ${shares.toStringAsFixed(2)}',
+            ),
+            isThreeLine: true,
           ),
         );
       } else {
@@ -155,9 +156,7 @@ class _RLTradingSimulatorScreenState extends State<RLTradingSimulatorScreen> {
           ListTile(
             leading: const Icon(Icons.pause_circle_outline, color: Colors.blue),
             title: Text('Hold @ ${_formatCurrency(price)}'),
-            subtitle: Text(
-              'Date: $formattedDate',
-            ), // Display the formatted date
+            subtitle: Text('Date: $formattedDate'),
           ),
         );
       }

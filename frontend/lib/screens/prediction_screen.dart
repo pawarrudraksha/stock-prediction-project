@@ -170,7 +170,46 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 ),
               ),
             ),
+
+            const SizedBox(height: 16),
+
+            // Model Guidance Section
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.indigo.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Model Guidance:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigo,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '• Random Forest: A robust and easy-to-use model good for general stock price prediction. '
+                    'It performs well on smaller datasets and is less prone to overfitting.',
+                    style: TextStyle(fontSize: 14, color: Colors.indigo),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    '• XGBoost: A powerful gradient boosting model that usually offers higher accuracy, '
+                    'especially for complex patterns and larger datasets, but might require more tuning.',
+                    style: TextStyle(fontSize: 14, color: Colors.indigo),
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 20),
+
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo.shade700,

@@ -242,7 +242,7 @@ exports.getStockSentiment = async (req, res) => {
     const { ticker } = req.query;
     if (!ticker) return res.status(400).json({ error: "Ticker is required" });
 
-    // const response = await axios.post("http://localhost:5001/sentiment", {
+    // const response = await axios.post("https://stock-prediction-project-836754351809.asia-south1.run.app/sentiment", {
     //   ticker,
     // });
     const response = await axios.post(
