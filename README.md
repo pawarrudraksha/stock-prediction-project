@@ -1,131 +1,123 @@
-**📈 AI-Powered Stock Prediction & Trading Simulator**
+#AI-Powered Stock Prediction & Trading Simulator
 
-This project is a full-stack stock analysis platform that combines:
+##Overview
 
-🔮 Machine Learning price prediction (Random Forest & XGBoost)
+This project is a full-stack stock analysis and trading simulation platform that integrates machine learning, natural language processing, and reinforcement learning to help users analyze markets, predict stock prices, and evaluate trading strategies.
 
-📰 Financial news sentiment analysis using FinBERT
+The system is built using a microservices-style architecture:
 
-🤖 Reinforcement Learning trading simulator
+**Flutter Web Frontend → Node.js Backend (Auth & User Data) → Flask ML API (Prediction, Sentiment, RL Simulation)**
 
-🌐 Flask ML API
+*Users can:*
 
-🔐 Node.js + MongoDB auth server
+-Predict future stock prices
 
-📱 Flutter web frontend
+-Analyze market sentiment from financial news
 
-*It allows users to:*
+-Simulate trading strategies using reinforcement learning
 
-Predict stock prices
+-Track portfolio performance metrics
 
-Analyze market sentiment
+-Authenticate and manage watchlists
 
-Simulate trading strategies
+##Features
 
-Track performance metrics
+*Price Prediction API*
 
-Authenticate users and manage portfolios
+-Supports Random Forest and XGBoost models
 
-Frontend (Flutter Web)
-        |
-        v
-Node.js Server (Auth + User Data)
-        |
-        v
-Flask ML API (Prediction, Sentiment, RL Simulation)
+-Automatically trains models if none exist for a ticker
 
-**🚀 Features**
-*🔮 Price Prediction API*
+-Includes fallback logic if training fails
 
-Uses Random Forest or XGBoost
+-Fetches real-time stock prices from Yahoo Finance
 
-Automatically trains models if missing
+*Sentiment Analysis*
 
-Fallback rule if training fails
+-Retrieves recent financial news using NewsAPI
 
-Real-time prices fetched from Yahoo Finance
+-Processes headlines through FinBERT
 
-*📰 Sentiment Analysis*
+-Produces an aggregated market sentiment score for a stock
 
-Fetches latest news using NewsAPI
+*Reinforcement Learning Trading Simulator*
 
-Runs headlines through FinBERT
+-Implements a Q-Learning agent
 
-Returns overall market sentiment
+-Uses a custom trading environment
 
-*🤖 Reinforcement Learning Trading Simulator*
+-Incorporates technical indicators such as:
 
-Q-Learning agent
+-Relative Strength Index (RSI)
 
-Custom trading environment
+-Moving Averages
 
-Technical indicators:
+-Volatility
 
-RSI
+-Saves trained strategies per stock ticker
 
-Moving Averages
+-Computes performance metrics including:
 
-Volatility
+-Sharpe Ratio
 
-Saves learned strategies per ticker
+-Win Rate
 
-Computes:
+-Portfolio Return
 
-Sharpe Ratio
+*Node.js Backend*
 
-Win Rate
+Responsible for:
 
-Portfolio Return
+-User authentication and authorization
 
-*🔐 Node.js Backend*
+-MongoDB storage
 
-Handles:
+-Watchlists and tracked stocks
 
-User authentication
+-Portfolio management
 
-MongoDB storage
+-API gateway between frontend and ML services
 
-Watchlists & stock data
+*Flutter Web Frontend*
 
-Portfolio tracking
+-Communicates with Node.js and Flask APIs
 
-*📱 Flutter Web Frontend*
+-Serves the web build through index.html
 
-Calls Node + Flask APIs
+-Provides interactive dashboards and charts
 
-Web-build served using index.html
+-Includes authentication screens
 
-Interactive dashboards & charts
+-Displays portfolio and trading metrics
 
-Authentication UI
+##Tech Stack
 
-**🛡️ Tech Stack**
-*Backend (ML)*
+*Machine Learning Backend*
 
-Flask
+-Flask
 
-Scikit-Learn
+-Scikit-Learn
 
-XGBoost
+-XGBoost
 
-Transformers (FinBERT)
+-Transformers (FinBERT)
 
-PyTorch
+-PyTorch
 
-Yahoo Finance
+-Yahoo Finance API
 
-Stable-Baselines3
+-Stable-Baselines3
 
-*Backend (API/Auth)*
+*Backend API / Authentication Server*
 
-Node.js
+-Node.js
 
-Express
+-Express
 
-MongoDB
+-MongoDB
 
-Mongoose
+-Mongoose
 
 *Frontend*
 
-Flutter Web
+-Flutter Web
