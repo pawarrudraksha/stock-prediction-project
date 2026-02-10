@@ -118,6 +118,6 @@ Responsible for:
 
 -Mongoose
 
-*Frontend*
+### *Frontend*
 
 -Flutter Web
