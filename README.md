@@ -1,6 +1,6 @@
-#AI-Powered Stock Prediction & Trading Simulator
+# AI-Powered Stock Prediction & Trading Simulator
 
-##Overview
+## Overview
 
 This project is a full-stack stock analysis and trading simulation platform that integrates machine learning, natural language processing, and reinforcement learning to help users analyze markets, predict stock prices, and evaluate trading strategies.
 
@@ -8,7 +8,7 @@ The system is built using a microservices-style architecture:
 
 **Flutter Web Frontend → Node.js Backend (Auth & User Data) → Flask ML API (Prediction, Sentiment, RL Simulation)**
 
-*Users can:*
+### *Users can:*
 
 -Predict future stock prices
 
@@ -20,9 +20,9 @@ The system is built using a microservices-style architecture:
 
 -Authenticate and manage watchlists
 
-##Features
+## Features
 
-*Price Prediction API*
+### *Price Prediction API*
 
 -Supports Random Forest and XGBoost models
 
@@ -32,7 +32,7 @@ The system is built using a microservices-style architecture:
 
 -Fetches real-time stock prices from Yahoo Finance
 
-*Sentiment Analysis*
+### *Sentiment Analysis*
 
 -Retrieves recent financial news using NewsAPI
 
@@ -40,7 +40,7 @@ The system is built using a microservices-style architecture:
 
 -Produces an aggregated market sentiment score for a stock
 
-*Reinforcement Learning Trading Simulator*
+### *Reinforcement Learning Trading Simulator*
 
 -Implements a Q-Learning agent
 
@@ -64,7 +64,7 @@ The system is built using a microservices-style architecture:
 
 -Portfolio Return
 
-*Node.js Backend*
+### *Node.js Backend*
 
 Responsible for:
 
@@ -78,7 +78,7 @@ Responsible for:
 
 -API gateway between frontend and ML services
 
-*Flutter Web Frontend*
+### *Flutter Web Frontend*
 
 -Communicates with Node.js and Flask APIs
 
@@ -90,9 +90,9 @@ Responsible for:
 
 -Displays portfolio and trading metrics
 
-##Tech Stack
+## Tech Stack
 
-*Machine Learning Backend*
+### *Machine Learning Backend*
 
 -Flask
 
@@ -108,7 +108,7 @@ Responsible for:
 
 -Stable-Baselines3
 
-*Backend API / Authentication Server*
+### *Backend API / Authentication Server*
 
 -Node.js
 
